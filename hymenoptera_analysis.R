@@ -3,6 +3,13 @@ library(tidyverse)
 library(ggmap)
 library(sf)
 library(mapview)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(cowplot)
+library(googleway)
+library(ggrepel)
+library(ggspatial)
+library(rgeos)
 
 #Read in all hymenoptera data
 hymenoptera <- read_csv("../records-2020-10-29.csv")
@@ -29,8 +36,15 @@ mapview(locations_sf)
 #Produce map for putting points on
 britain <- get_stamenmap(center = c(-2.1, 54.1), zoom=5, maptype="terrain")
 
-britain <- get_stamenmap(bbox = c(left = -11.733, bottom = 49.582, right =2.285, top = 61.186), zoom=5, maptype="toner")
+britain <- get_stamenmap(bbox = c(left = -11.733, bottom = 49.582, right =2.285, top = 61.186), zoom=5, maptype="terrain")
 
 ggmap(britain) +
   geom_point(data = hymenoptera_2020 %>%
                arrange(year2020), aes(x=lon, y=lat, colour=year2020), alpha=0.5, size=1)
+
+#We now have a map, but it's a little bit untidy. Is there another package we can use to do this better? I would be happy just to have plain lines that I can eventually superimpose locations of cities on.
+
+#We've got some libraries installed that will allow us to use a world map, so let's do that.
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+class(world)
