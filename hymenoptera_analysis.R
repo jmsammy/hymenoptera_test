@@ -12,10 +12,6 @@ library(ggspatial)
 library(rgeos)
 library(gifski)
 library(gganimate)
-<<<<<<< HEAD
-=======
-
->>>>>>> 738fc42ddfafff5a15b1329145e89a9da25686c3
 
 #Read in all hymenoptera data
 hymenoptera <- read_csv("../records-2020-10-29.csv")
