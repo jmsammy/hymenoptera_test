@@ -12,6 +12,7 @@ library(ggspatial)
 library(rgeos)
 library(gifski)
 library(gganimate)
+library(transformr)
 
 #Read in all hymenoptera data
 hymenoptera <- read_csv("../records-2020-10-29.csv")
@@ -72,11 +73,9 @@ ggplot(data = world) +
 p <- ggplot(data = world) +
   geom_sf() +
   coord_sf(xlim = c(-11.733, 2.285), ylim = c(49.582, 61.186), expand = FALSE)+
-  geom_point(data = hymenoptera_2020 %>%
-                    arrange(year2020), aes(x=lon, y=lat, colour=year2020))
+  geom_point(data = hymenoptera, aes(x=lon, y=lat, colour=as.factor(year)))+
+  theme(legend.position = "none")+
+  transition_time(year)+
+  labs(title = "Year: {as.integer(frame_time)}")
 
-anim <- p +
-  transition_states(year2020,
-                  transition_length = 2,
-                  state_length = 1)
-anim
+animate(p)
