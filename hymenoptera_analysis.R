@@ -68,6 +68,16 @@ ggplot(data = world) +
   geom_density_2d(data = hymenoptera_2020 %>%
                arrange(year2020), aes(x=lon, y=lat, colour=year2020))
 
+#Contour map with full data?
+ggplot(data = world) +
+  geom_sf() +
+  coord_sf(xlim = c(-11.733, 2.285), ylim = c(49.582, 61.186), expand = FALSE)+
+  geom_density2d(data = hymenoptera, aes(x=lon, y=lat, group=year))
+
+#I can't figure out why it thinks there are non-positive values in here... 
+#Also this error: Error in seq_len(n) : argument must be coercible to non-negative integer
+#I don't understand what to do here.
+
 #This works, maybe I should try using gganimate to look at the change in distribution through the years
 
 p <- ggplot(data = world) +
