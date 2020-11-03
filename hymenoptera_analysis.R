@@ -10,6 +10,9 @@ library(googleway)
 library(ggrepel)
 library(ggspatial)
 library(rgeos)
+library(gifski)
+library(gganimate)
+
 
 #Read in all hymenoptera data
 hymenoptera <- read_csv("../records-2020-10-29.csv")
@@ -18,15 +21,16 @@ hymenoptera <- Filter(function(x)!all(is.na(x)), hymenoptera)
 #Rename columns to 'lat' and 'lon' to make them more readable
 hymenoptera <- hymenoptera %>%
   rename(lat = `decimalLatitude processed`,
-         lon = `decimalLongitude processed`)
+         lon = `decimalLongitude processed`,
+         year = `year processed`)
 
 #split into 2020 and not 2020
 
-hymenoptera$year2020 <- ifelse(hymenoptera$`year processed` == 2020, TRUE, FALSE)
+hymenoptera$year2020 <- ifelse(hymenoptera$year == 2020, TRUE, FALSE)
 
 #filter out 2020 data
 hymenoptera_2020 <- hymenoptera %>%
-  filter(`year processed` == "2020" | `year processed` == '2019')
+  filter(year == "2020" | year == '2019')
 
 #Create map for viewing
 locations_sf <- st_as_sf(hymenoptera_2020, coords = c("lon", "lat"), crs = 4326)
@@ -56,3 +60,24 @@ ggplot(data = world) +
                arrange(year2020), aes(x=lon, y=lat, colour=year2020), alpha=0.5, size=1)
 
 #I like this! It's nice and simple - much simpler than what I was using for ggmap.
+
+#I want to try making a contour map
+ggplot(data = world) +
+  geom_sf() +
+  coord_sf(xlim = c(-11.733, 2.285), ylim = c(49.582, 61.186), expand = FALSE)+
+  geom_density_2d(data = hymenoptera_2020 %>%
+               arrange(year2020), aes(x=lon, y=lat, colour=year2020))
+
+#This works, maybe I should try using gganimate to look at the change in distribution through the years
+
+p <- ggplot(data = world) +
+  geom_sf() +
+  coord_sf(xlim = c(-11.733, 2.285), ylim = c(49.582, 61.186), expand = FALSE)+
+  geom_point(data = hymenoptera_2020 %>%
+                    arrange(year2020), aes(x=lon, y=lat, colour=year2020))
+
+anim <- p +
+  transition_states(year2020,
+                  transition_length = 2,
+                  state_length = 1)
+anim
