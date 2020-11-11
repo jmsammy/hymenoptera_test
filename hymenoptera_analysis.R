@@ -13,6 +13,8 @@ library(rgeos)
 library(gifski)
 library(gganimate)
 library(transformr)
+library(raster)
+library(rgdal)
 
 #Read in all hymenoptera data
 hymenoptera <- read_csv("../records-2020-10-29.csv")
@@ -60,6 +62,13 @@ ggplot(data = world) +
                arrange(year2020), aes(x=lon, y=lat, colour=year2020), alpha=0.5, size=1)
 
 #I like this! It's nice and simple - much simpler than what I was using for ggmap.
+
+#Read in land use data.
+gb2019 <- raster("../gb2019lcm20m.tif")
+gb2019_pts <- rasterToPoints(gb2019, spatial = TRUE)
+# Then to a 'conventional' dataframe
+gb2019_df  <- data.frame(gb2019_pts)
+rm(gb2019_pts)
 
 #I want to try making a contour map
 ggplot(data = world) +
