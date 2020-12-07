@@ -15,16 +15,26 @@ library(gganimate)
 library(transformr)
 library(raster)
 library(rgdal)
+library(stringdist)
 
 #Read in all hymenoptera data
 hymenoptera <- read_csv("../records-2020-10-29.csv")
 hymenoptera <- Filter(function(x)!all(is.na(x)), hymenoptera)
-
+hymenoptera <- hymenoptera %>%
+  janitor::clean_names()
+names(hymenoptera)
 #Rename columns to 'lat' and 'lon' to make them more readable
 hymenoptera <- hymenoptera %>%
-  rename(lat = `decimalLatitude processed`,
-         lon = `decimalLongitude processed`,
-         year = `year processed`)
+  rename(lat = decimal_latitude_processed,
+         lon = decimal_longitude_processed,
+         year = year_processed)
+
+head(hymenoptera$event_date)
+
+
+
+hymenoptera_month <- hymenoptera %>%
+  group_by(month_processed)
 
 #split into 2020 and not 2020
 
