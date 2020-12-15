@@ -89,7 +89,7 @@ class(world)
 ggplot(data = world) +
   geom_sf() +
   coord_sf(xlim = c(-11.733, 2.285), ylim = c(49.582, 61.186), expand = FALSE)+
-  geom_point(data = hymenoptera_2020 %>%
+  geom_point(data = hymenoptera %>%
                arrange(year2020), aes(x=lon, y=lat, colour=year2020), alpha=0.5, size=1)
 
 #I like this! It's nice and simple - much simpler than what I was using for ggmap.
