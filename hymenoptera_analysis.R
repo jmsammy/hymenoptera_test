@@ -89,10 +89,29 @@ class(world)
 ggplot(data = world) +
   geom_sf() +
   coord_sf(xlim = c(-11.733, 2.285), ylim = c(49.582, 61.186), expand = FALSE)+
-  geom_point(data = hymenoptera %>%
-               arrange(year2020), aes(x=lon, y=lat, colour=year2020), alpha=0.5, size=1)
+  geom_count(data = hymenoptera %>%
+               arrange(year2020), aes(x=lon, y=lat, colour=year2020), alpha=0.5)+
+  theme_bw()+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  scale_colour_discrete(name = "Record Year", labels = c("Before 2020", "2020"))
 
 #I like this! It's nice and simple - much simpler than what I was using for ggmap.
+
+#Let's try rounding things to integers
+hymenoptera$lat_int <- round(hymenoptera$lat, digits = 1)
+hymenoptera$lon_int <- round(hymenoptera$lon, digits = 1)
+
+ggplot(data = world) +
+  geom_sf() +
+  coord_sf(xlim = c(-11.733, 2.285), ylim = c(49.582, 61.186), expand = FALSE)+
+  geom_count(data = hymenoptera %>%
+               arrange(year2020), aes(x=lon_int, y=lat_int, colour=year2020), alpha=0.5)+
+  theme_bw()+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  scale_colour_discrete(name = "Record Year", labels = c("Before 2020", "2020"))
+
 
 #Read in land use data.
 gb2019 <- raster("../gb2019lcm20m.tif")
