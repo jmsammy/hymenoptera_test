@@ -31,10 +31,16 @@ hymenoptera <- hymenoptera %>%
 
 head(hymenoptera$event_date)
 
+event_colnames <- c("event_year", "event_month", "event_day")
+event_split <- str_split_fixed(hymenoptera$event_date, "-", 3)
+colnames(event_split) <- event_colnames
 
+hymenoptera <- cbind(hymenoptera, event_split)
+
+test <- data.frame(hymenoptera$event_date, hymenoptera$event_year, hymenoptera$event_month, hymenoptera$event_day)
 
 hymenoptera_month <- hymenoptera %>%
-  group_by(month_processed)
+  group_by(event_month)
 
 #split into 2020 and not 2020
 
