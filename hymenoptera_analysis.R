@@ -39,12 +39,27 @@ hymenoptera <- cbind(hymenoptera, event_split)
 
 test <- data.frame(hymenoptera$event_date, hymenoptera$event_year, hymenoptera$event_month, hymenoptera$event_day)
 
-hymenoptera_month <- hymenoptera %>%
-  group_by(event_month)
-
 #split into 2020 and not 2020
 
-hymenoptera$year2020 <- ifelse(hymenoptera$year == 2020, TRUE, FALSE)
+hymenoptera$year2020 <- ifelse(hymenoptera$event_year == 2020, TRUE, FALSE)
+
+hymenoptera_month <- hymenoptera %>%
+  group_by(scientific_name_processed, event_year, event_month, year2020) %>%
+  count(name = "n")
+
+hymenoptera_species <- hymenoptera %>%
+  group_by(scientific_name_processed) %>%
+  count(name = "n")
+
+top_species <- hymenoptera_species %>%
+  filter(n > 500)
+
+top_hymenoptera_month <- hymenoptera_month %>%
+  filter(scientific_name_processed %in% top_species$scientific_name_processed)
+
+ggplot(top_hymenoptera_month, aes(event_month, n, 
+                              fill = scientific_name_processed))+
+  geom_boxplot()
 
 #filter out 2020 data
 hymenoptera_2020 <- hymenoptera %>%
