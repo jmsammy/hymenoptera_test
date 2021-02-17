@@ -115,6 +115,7 @@ ggplot(data = world) +
 
 #Read in land use data.
 gb2019 <- raster("../gb2019lcm20m.tif")
+plot(gb2019)
 gb2019_pts <- rasterToPoints(gb2019, spatial = TRUE)
 # Then to a 'conventional' dataframe
 gb2019_df  <- data.frame(gb2019_pts)
