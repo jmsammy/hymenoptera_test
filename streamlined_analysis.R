@@ -72,6 +72,7 @@ ggplot(data = world) +
 
 #Now land use data
 gb2019 <- raster("../gb2019lcm20m.tif")
+plot(gb2019)
 str(gb2019)
 ggplot(data = world) +
   geom_sf() +
