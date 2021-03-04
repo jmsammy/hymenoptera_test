@@ -43,7 +43,7 @@ gplot(gb2019b1) +
   # value is the specific value (of reflectance) each pixel is associated with
   scale_fill_viridis_c() +
   geom_count(data = hymenoptera %>%
-               arrange(year2020), aes(x=lon, y=lat), alpha=0.5)+
+               arrange(year2020), aes(x=lon, y=lat), alpha=0.1)+
   coord_quickmap() +
   ggtitle("UK Land Use") +
   xlab("Longitude") +
@@ -52,3 +52,5 @@ gplot(gb2019b1) +
   theme(plot.title = element_text(hjust = 0.5),             # centres plot title
         text = element_text(size=20),		       	    # font size
         axis.text.x = element_text(angle = 90, hjust = 1))  # rotates x axis text
+
+
