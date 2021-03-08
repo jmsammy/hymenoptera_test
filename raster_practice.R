@@ -7,12 +7,14 @@ library(viridis)
 library(rnaturalearth)
 library(rasterVis)
 
-gb2019 <- raster("../gb2019lcm20m_wgs84.tif")
+gb2019 <- raster("../201925m_wgs.tif")
 gb2019
-gb2019b1 <- raster("../gb2019lcm20m_wgs84.tif", band=1)
-gb2019b2 <- raster("../gb2019lcm20m_wgs84.tif", band=2)
+gb2019b1 <- raster("../201925m_wgs.tif", band=1)
+gb2019b2 <- raster("../201925m_wgs.tif", band=2)
+gb2019b3 <- raster("../201925m_wgs.tif", band=3)
 plot(gb2019b1)
 plot(gb2019b2)
+plot(gb2019b3)
 
 #Read in all hymenoptera data
 hymenoptera <- read_csv("../records-2020-10-29.csv")
@@ -53,4 +55,23 @@ gplot(gb2019b1) +
         text = element_text(size=20),		       	    # font size
         axis.text.x = element_text(angle = 90, hjust = 1))  # rotates x axis text
 
+col <- cbind(hymenoptera$lon, hymenoptera$lat)
 
+test <- raster::extract(gb2019b1, col)
+hymenoptera$land_use <- test
+
+dictionary <- function(df, dict, old_col, new_col, dict_refcol, dict_defcol){
+  for(i in 1:length(df[[old_col]])){
+    df[[new_col]][i] <- dict[[dict_defcol]][dict[[dict_refcol]]==df[[old_col]][i]]
+  }
+  return(df)
+}
+
+landuse_dict <- readxl::read_excel("landuse_dict.xlsx")
+
+hymenoptera <- dictionary(df = hymenoptera, 
+           dict =landuse_dict, 
+           old_col = "land_use", 
+           new_col = "land_use_names", 
+           dict_refcol = "num_ref", 
+           dict_defcol = "land_cover_class")
