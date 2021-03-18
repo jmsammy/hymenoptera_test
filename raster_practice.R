@@ -39,6 +39,10 @@ writeRaster(x = gb2019_ha,
             
             filename="gb2019_ha.tif", 	
             format = "GTiff") 
+#I can now read in the tif without having to make it afresh every time.
+
+gb20191k <- raster("gb2019_ha.tif", band=1) 
+gb2019prop <- raster("gb2019_ha.tif", band=2) 
 
 hist(gb2019prop)
 sr2019 <- "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs"
@@ -82,31 +86,21 @@ hymenoptera <- cbind(hymenoptera, event_split)
 hymenoptera$year2020 <- ifelse(hymenoptera$event_year == 2020, TRUE, FALSE)
 
 #remove NAs
-hymenoptera$grid_reference
+levels(as.factor(hymenoptera$state_province_processed))
 
 hymenoptera <- hymenoptera %>%
   filter(nchar(grid_reference) >= 8)
 foo <- osg_parse(hymenoptera$grid_reference[1])
 
-for(i in (1:length(hymenoptera$grid_reference))){
-  foo <- osg_parse(hymenoptera$grid_reference[i])
-  df <- data.frame(foo)
-  hymenoptera$easting[i] <- foo$easting
-  hymenoptera$northing[i] <- foo$northing
-}
-
-hymenoptera <- hymenoptera %>%
-  filter(!is.na(plan_no))
-
-world <- ne_countries(scale = "medium", returnclass = "sf")
-
 hymenoptera$easting <- NA
 hymenoptera$northing <- NA
 
-# Convert grid ref to easting/northing
+hymenoptera <- hymenoptera %>%
+  filter(!is.na(grid_reference)) %>%
+  filter(!state_province_processed == "Northern Ireland")
 
-for(i in (1:length(hymenoptera$plan_no))){
-  foo <- osg_parse(hymenoptera$plan_no[i])
+for(i in (1:length(hymenoptera$grid_reference))){
+  foo <- osg_parse(hymenoptera$grid_reference[i])
   df <- data.frame(foo)
   hymenoptera$easting[i] <- foo$easting
   hymenoptera$northing[i] <- foo$northing
