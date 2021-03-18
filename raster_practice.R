@@ -7,6 +7,7 @@ library(viridis)
 library(rnaturalearth)
 library(rasterVis)
 library(rnrfa)
+library(sparta)
 
 #Dictionary function for later use
 dictionary <- function(df, dict, old_col, new_col, dict_refcol, dict_defcol){
@@ -26,8 +27,20 @@ plot(gb2019b2)
 plot(gb2019b3)
 res(gb2019b1)
 gb20191k <- aggregate(gb2019b1, fact = 4, fun = modal)
+gb2019prop <- aggregate(gb2019b1, fact=4, fun = rs_prop_2)
+plot(gb2019prop)
 plot(gb20191k)
 area(gb20191k)
+gb2019_ha <- stack(gb20191k, gb2019prop)
+
+writeRaster(x = gb2019_ha,
+            
+            # where your file will go - update with your file path!
+            
+            filename="gb2019_ha.tif", 	
+            format = "GTiff") 
+
+hist(gb2019prop)
 sr2019 <- "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs"
 
 #####
@@ -69,6 +82,18 @@ hymenoptera <- cbind(hymenoptera, event_split)
 hymenoptera$year2020 <- ifelse(hymenoptera$event_year == 2020, TRUE, FALSE)
 
 #remove NAs
+hymenoptera$grid_reference
+
+hymenoptera <- hymenoptera %>%
+  filter(nchar(grid_reference) >= 8)
+foo <- osg_parse(hymenoptera$grid_reference[1])
+
+for(i in (1:length(hymenoptera$grid_reference))){
+  foo <- osg_parse(hymenoptera$grid_reference[i])
+  df <- data.frame(foo)
+  hymenoptera$easting[i] <- foo$easting
+  hymenoptera$northing[i] <- foo$northing
+}
 
 hymenoptera <- hymenoptera %>%
   filter(!is.na(plan_no))
@@ -86,6 +111,71 @@ for(i in (1:length(hymenoptera$plan_no))){
   hymenoptera$easting[i] <- foo$easting
   hymenoptera$northing[i] <- foo$northing
 }
+
+hymenoptera$event_date <- as.Date(hymenoptera$event_date)
+str(hymenoptera$event_date)
+unique_Months <- format(hymenoptera$event_date, "%B_%Y")
+
+hymenoptera_nona <- hymenoptera %>%
+  filter(!is.na(scientific_name_processed)) %>%
+  filter(!is.na(plan_no)) %>%
+  filter(!is.na(event_date)) %>%
+  filter(!is.na(event_year)) %>%
+  filter(!is.na(event_month))
+
+hymenoptera_subset  <- siteSelection(taxa = hymenoptera_nona$scientific_name_processed,
+                               site = hymenoptera_nona$plan_no,
+                               time_period = hymenoptera_nona$event_date,
+                               minL=2)
+
+system.time({
+  occ_out <- occDetModel(taxa = hymenoptera_nona$scientific_name_processed,
+                         site = hymenoptera_nona$plan_no,
+                         survey = hymenoptera_nona$event_date,
+                         write_results = FALSE,
+                         n_iterations = 200,
+                         burnin = 15,
+                         n_chains = 3,
+                         thinning = 3,
+                         seed = 123)
+})
+
+library(snowfall)
+
+# I have 12 logical processors on my PC so I set cpus to 11 (n-1)
+# when I initialise the cluster
+sfInit(parallel = TRUE, cpus = 11)
+
+# Export my data to the cluster
+sfExport('formattedOccData')
+
+# I create a function that takes a species name and runs my model
+occ_mod_function <- function(taxa_name){
+  
+  library(sparta)
+  
+  occ_out <- occDetModel(taxa = taxa_name,
+                         site = hymenoptera$plan_no,
+                         survey = unique_Months,
+                         write_results = FALSE,
+                         n_iterations = 200,
+                         burnin = 15,
+                         n_chains = 3,
+                         thinning = 3,
+                         seed = 123)
+} 
+
+# I then run this in parallel
+
+system.time({
+  taxa <- levels(as.factor(hymenoptera$scientific_name_processed))
+  para_out <- sfClusterApplyLB(taxa, occ_mod_function)
+})
+# Name each element of this output by the species
+for(i in  1:length(para_out)) names(para_out)[i] <- para_out[[i]]$SPP_NAM
+
+# Stop the cluster
+sfStop()
 
 gplot(gb20191k) +
   geom_raster(aes(x = x, y = y, fill = value)) +
