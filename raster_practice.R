@@ -231,7 +231,17 @@ ggplot(hymenoptera, aes(x=land_use, fill=scientific_name_processed))+
 ggplot(hymenoptera, aes(x=land_use_names, y=land_use_prop, fill=land_use_names))+
   geom_violin()
 
+anthidium_manicatum <- hymenoptera %>%
+  filter(scientific_name_processed == "Anthidium manicatum")
+
+ggplot(anthidium_manicatum, aes(x=land_use))+
+  geom_histogram()
+
 # There's a lot of saltwater that's around 0.6... should I remove this? Will think about it.
+# Species to consider: 	
+# Anthidium manicatum
+# Nomada flava
+# Both have pretty long shifts in Platts et al. 2019
 
 #Use dictionary function for anthrome data
 col <- cbind(hymenoptera$easting, hymenoptera$northing)
