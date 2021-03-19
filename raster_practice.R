@@ -105,6 +105,10 @@ for(i in (1:length(hymenoptera$grid_reference))){
   hymenoptera$easting[i] <- foo$easting
   hymenoptera$northing[i] <- foo$northing
 }
+rm(foo)
+
+hymenoptera$easting <- floor(hymenoptera$easting/100)*100 # ensure x precision is exactly 100m, referenced to left
+hymenoptera$northing <- floor(hymenoptera$northing/100)*100 # ensure y precision is exactly 100m, referenced to bottom
 
 hymenoptera$event_date <- as.Date(hymenoptera$event_date)
 str(hymenoptera$event_date)
@@ -186,7 +190,7 @@ gplot(gb20191k) +
         text = element_text(size=20),		       	    # font size
         axis.text.x = element_text(angle = 90, hjust = 1))  # rotates x axis text
 
-col <- cbind(hymenoptera$easting, hymenoptera$northing)
+col <- cbind(hymenoptera$easting+50, hymenoptera$northing+50) # Add 50 so that the point being extracted is in the centre of the hectare.
 
 land_use <- raster::extract(gb20191k, col)
 hymenoptera$land_use <- land_use
